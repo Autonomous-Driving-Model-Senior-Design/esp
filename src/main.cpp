@@ -21,8 +21,8 @@ const gpio_num_t ledPin1 = GPIO_NUM_6;
 const gpio_num_t ledPin2 = GPIO_NUM_7;
 const gpio_num_t ledPin3 = GPIO_NUM_8;
 
-// #define RX GPIO_NUM_44
-// #define TX GPIO_NUM_43
+#define RX GPIO_NUM_44
+#define TX GPIO_NUM_43
 
 #define PWM_CHANNEL1 LEDC_CHANNEL_1
 #define PWM_CHANNEL2 LEDC_CHANNEL_2
@@ -130,7 +130,7 @@ void initUART() {
 	const int uart_buffer_size = (1024 * 2);
 	QueueHandle_t uart_queue;
 	ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, uart_buffer_size, uart_buffer_size, 10, 0, 0));
-	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, SOC_TX0, SOC_RX0, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, TX, RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 }
 
 void initPWM1() {
@@ -203,7 +203,7 @@ void initPWM3() {
 }
 
 void setup() {
-	Serial.begin(115200);
+	// Serial.begin(115200);
 	initPWM1();
 	initPWM2();
 	initPWM3();
@@ -246,18 +246,15 @@ void setup() {
 }
 
 void loop() {
-	// Notify changed value
-	int data = readUART();
-	Serial.println(data);
 	if (deviceConnected) {
 		ble->setValue(String(value).c_str());
 		ble->notify();
 		value++;
 		delay(3000);
 	}
-	else {
-		setServoAngle(data);
-	}
+	// else {
+	// 	setServoAngle(data);
+	// }
 
 	// Disconnecting
 	if (!deviceConnected && oldDeviceConnected) {
@@ -271,74 +268,3 @@ void loop() {
 		oldDeviceConnected = deviceConnected;
 	}
 }
-
-// #include <driver/gpio.h>
-// #include <driver/uart.h>
-// #include "hal/uart_types.h"
-// #include "esp_err.h"
-// #include <Arduino.h>
-
-// int readSingleByteInteger() {
-//     uint8_t data[1];
-//     int receivedValue = -1;
-
-//     int length = uart_read_bytes(UART_NUM_1, data, sizeof(data), 20 / portTICK_PERIOD_MS);
-
-//     if (length > 0) {
-//         receivedValue = data[0]; // Directly use the byte value
-//     }
-
-//     return receivedValue;
-// }
-
-
-// void initUART1() {
-// 	uart_config_t uart_config = {
-// 		.baud_rate = 115200,
-// 		.data_bits = UART_DATA_8_BITS,
-// 		.parity = UART_PARITY_DISABLE,
-// 		.stop_bits = UART_STOP_BITS_1,
-// 		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-// 	};
-// 	// Configure UART parameters
-// 	ESP_ERROR_CHECK(uart_param_config(UART_NUM_0, &uart_config));
-	
-// 	const int uart_buffer_size = (1024 * 2);
-// 	QueueHandle_t uart_queue;
-// 	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, SOC_TX0, SOC_RX0, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-
-// 	ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, uart_buffer_size, uart_buffer_size, 0, NULL, 0));
-// }
-
-// void initUART2() {
-// 	uart_config_t uart_config = {
-// 		.baud_rate = 115200,
-// 		.data_bits = UART_DATA_8_BITS,
-// 		.parity = UART_PARITY_DISABLE,
-// 		.stop_bits = UART_STOP_BITS_1,
-// 		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-// 	};
-// 	// Configure UART parameters
-// 	ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uart_config));
-	
-// 	const int uart_buffer_size = (1024 * 2);
-// 	QueueHandle_t uart_queue;
-// 	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, TX1, RX1, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-
-// 	ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, uart_buffer_size, uart_buffer_size, 0, NULL, 0));
-// }
-
-// void setup() {
-// 	Serial.begin(115200);
-// 	initUART1();
-// 	initUART2();
-// }
-
-// void loop() {
-// 	// Notify changed value
-// 	//int data = readUART();
-// 	int data = readSingleByteInteger();
-// 	Serial.println(data);
-// 	uart_write_bytes(UART_NUM_0, &data, 1);
-// 	// delay(1000);
-// }
