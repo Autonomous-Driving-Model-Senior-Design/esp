@@ -21,8 +21,8 @@ const gpio_num_t ledPin1 = GPIO_NUM_6;
 const gpio_num_t ledPin2 = GPIO_NUM_7;
 const gpio_num_t ledPin3 = GPIO_NUM_8;
 
-#define RX GPIO_NUM_44
-#define TX GPIO_NUM_43
+// #define RX GPIO_NUM_44
+// #define TX GPIO_NUM_43
 
 #define PWM_CHANNEL1 LEDC_CHANNEL_1
 #define PWM_CHANNEL2 LEDC_CHANNEL_2
@@ -130,7 +130,7 @@ void initUART() {
 	const int uart_buffer_size = (1024 * 2);
 	QueueHandle_t uart_queue;
 	ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, uart_buffer_size, uart_buffer_size, 10, 0, 0));
-	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, TX, RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, SOC_TX0, SOC_RX0, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 }
 
 void initPWM1() {
