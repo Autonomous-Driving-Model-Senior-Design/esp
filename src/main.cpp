@@ -21,9 +21,6 @@ const gpio_num_t ledPin1 = GPIO_NUM_6;
 const gpio_num_t ledPin2 = GPIO_NUM_7;
 const gpio_num_t ledPin3 = GPIO_NUM_8;
 
-#define RX GPIO_NUM_44
-#define TX GPIO_NUM_43
-
 #define PWM_CHANNEL1 LEDC_CHANNEL_1
 #define PWM_CHANNEL2 LEDC_CHANNEL_2
 #define PWM_CHANNEL3 LEDC_CHANNEL_3
@@ -77,6 +74,9 @@ void setHBridgePWM(int dutyCycle) {
     } else if(dutyCycle == 191) { // Backward
       	ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, 0);
       	ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, 200);
+		// uint8_t data;
+		// int len = uart_read_bytes(UART_NUM_0, &data, (1024 - 1), 20 / portTICK_PERIOD_MS);
+		// setServoAngle(static_cast<int>(data));
     } else if(dutyCycle == 192) { // Stop
       	ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, 0);
       	ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, 0);
@@ -100,37 +100,18 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
 	}
 };
 
-int readUART() {
-    uint8_t data[1];
-    int receivedValue = -1;
-
-    int length = uart_read_bytes(UART_NUM_0, data, 1, 20 / portTICK_PERIOD_MS);
-
-    if (length > 0) {
-        receivedValue = data[0];
-        if (receivedValue < 0 || receivedValue > 180) {
-            receivedValue = -1;
-        }
-    }
-
-    return receivedValue;
-}
-
 void initUART() {
-	uart_config_t uart_config = {
-		.baud_rate = 115200,
-		.data_bits = UART_DATA_8_BITS,
-		.parity = UART_PARITY_DISABLE,
-		.stop_bits = UART_STOP_BITS_1,
-		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-	};
-	// Configure UART parameters
-	ESP_ERROR_CHECK(uart_param_config(UART_NUM_0, &uart_config));
-	
-	const int uart_buffer_size = (1024 * 2);
-	QueueHandle_t uart_queue;
-	ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, uart_buffer_size, uart_buffer_size, 10, 0, 0));
-	ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, TX, RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+	uart_config_t uart1_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+    };
+
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_0, &uart1_config));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, SOC_TX0, SOC_RX0, 0, 0));
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, 1024, 1024, 0, NULL, 0));
 }
 
 void initPWM1() {
@@ -203,7 +184,7 @@ void initPWM3() {
 }
 
 void setup() {
-	// Serial.begin(115200);
+	Serial.begin(115200);
 	initPWM1();
 	initPWM2();
 	initPWM3();
@@ -253,7 +234,7 @@ void loop() {
 		delay(3000);
 	}
 	// else {
-	// 	setServoAngle(data);
+	// 	
 	// }
 
 	// Disconnecting
