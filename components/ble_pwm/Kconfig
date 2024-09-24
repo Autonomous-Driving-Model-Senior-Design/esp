@@ -1,0 +1,36 @@
+menu "RGB Configuration"
+
+    config RED_LED_PIN
+        int "RED GPIO Pin Number"
+        range 0 48
+        default 0
+        help
+            GPIO Pin Number to control RED LED
+
+    config GREEN_LED_PIN
+        int "GREEN GPIO Pin Number"
+        range 0 48
+        default 2
+        help
+            GPIO Pin Number to control GREEN LED
+
+    config BLUE_LED_PIN
+        int "BLUE GPIO Pin Number"
+        range 0 48
+        default 4
+        help
+            GPIO Pin Number to control BLUE LED
+
+    choice LED_POLARITY
+        prompt "Choose LED polarity"
+        default LED_ACTIVE_HIGH
+        help
+            Specify if LEDs are active low or active high
+
+        config LED_ACTIVE_HIGH
+            bool "ACTIVE HIGH"
+        config LED_ACTIVE_LOW
+            bool "ACTIVE LOW"
+    endchoice
+
+endmenu
