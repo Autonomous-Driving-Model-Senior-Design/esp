@@ -13,7 +13,7 @@
 #define TXD_PIN 1
 #define RXD_PIN 2
 
-static void echo_task(void *arg)
+static void read_byte(void *arg)
 {
     const uart_port_t uart_num = UART_NUM_1;
     uart_config_t uart_config = {
@@ -36,19 +36,20 @@ static void echo_task(void *arg)
     ESP_ERROR_CHECK(uart_driver_install(uart_num, uart_buffer_size, \
                                             uart_buffer_size, 10, &uart_queue, 0));
 
-    // Write data to UART.
-    // char* test_str = "This is a test string.";
 
-    char data[1];
-
+    char data[5];
+    setHBridgePWM(20);
     while (1) {
-        int len = uart_read_bytes(uart_num, data, 1, 1);
-        // ESP_LOGI("UART TEST", "Recv str: %s", (char *) data);
-        if (len) {
+        int len = uart_read_bytes(uart_num, data, 4, 10);
+        // ESP_LOGI("UART TEST", "Recv str: %s | %d", (char *) data, len);
+        if (len == 4) {
             data[len] = '\0';
-            // ESP_LOGI("UART TEST", "Recv str: %s", (char *) data);
-            ESP_LOGI("UART TEST", "Recv data: %d",strtol(data, NULL, 16));
-            // setServoAngle(data);
+            long converted = strtol(data, NULL, 0);
+            if(converted >= 40 && converted <= 140) {
+                ESP_LOGI("UART TEST", "                         Recv data: %ld", converted);
+                // setServoAngle(converted);
+                setHBridgePWM(converted);
+            }
         }
         
 
@@ -58,6 +59,8 @@ static void echo_task(void *arg)
 void app_main(void)
 {
     initPWM1();
+    initPWM2();
+    initPWM2();
     bt_init();
-    echo_task(NULL);
+    read_byte(NULL);
 }

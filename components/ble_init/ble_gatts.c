@@ -86,11 +86,11 @@ static void add_characteristic(void)
     }
 }
 
-static void handle_write_event(uint8_t * p_data, uint16_t len)
+static void handle_write_event(uint8_t * data, uint16_t len)
 {
-    uint8_t opcode = p_data[0];
-    ESP_LOGI(GATTS_TAG, "opcode = 0x%x", opcode);
-    setServoAngle(opcode);
+    uint8_t value = data[0];
+    ESP_LOGI(GATTS_TAG, " = 0x%x", value);
+    setServoAngle(value);  
 }
 
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
