@@ -85,12 +85,28 @@ static void add_characteristic(void)
         ESP_LOGE(GATTS_TAG, "add char failed, error code =%x",add_char_ret);
     }
 }
+bool flag = true;
 
 static void handle_write_event(uint8_t * data, uint16_t len)
 {
-    uint8_t value = data[0];
-    ESP_LOGI(GATTS_TAG, " = 0x%x", value);
-    setServoAngle(value);  
+    uint8_t value0 = data[0];
+    uint8_t value1 = data[1];
+    ESP_LOGI(GATTS_TAG, " = %d", value0);
+    ESP_LOGI(GATTS_TAG, " = %d", value1);
+    if(value0 == 0xff && value1 == 0xff) {
+        flag = false;
+    } else if(value0 == 0x00 && value1 == 0x00) {
+        flag = true;
+        value0 = 80;
+        value1 = 0;
+    }
+    if (flag == true) {
+        setServoAngle(value0); 
+        setHBridgePWM(value1, value0);
+    }
+    ESP_LOGI(GATTS_TAG, "BT = %d", flag);
+
+    
 }
 
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {

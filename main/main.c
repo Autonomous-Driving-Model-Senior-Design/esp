@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "ble_main.h"
 #include "ble_pwm.h"
+#include "ble_gatts.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/uart.h"
@@ -10,8 +11,8 @@
 #include "esp_log.h"
 #include "string.h"
 
-#define TXD_PIN 1
-#define RXD_PIN 2
+#define TXD_PIN 35
+#define RXD_PIN 36
 
 static void read_byte(void *arg)
 {
@@ -37,30 +38,30 @@ static void read_byte(void *arg)
                                             uart_buffer_size, 10, &uart_queue, 0));
 
 
-    char data[5];
-    setHBridgePWM(20);
+    char data[7];
+    long converted = 80;
     while (1) {
-        int len = uart_read_bytes(uart_num, data, 4, 10);
+        int len = uart_read_bytes(uart_num, data, 6, 10);
         // ESP_LOGI("UART TEST", "Recv str: %s | %d", (char *) data, len);
-        if (len == 4) {
+        if (len == 6) {
             data[len] = '\0';
-            long converted = strtol(data, NULL, 0);
-            if(converted >= 40 && converted <= 140) {
-                ESP_LOGI("UART TEST", "                         Recv data: %ld", converted);
-                // setServoAngle(converted);
-                setHBridgePWM(converted);
+            converted = strtol(data, NULL, 0);
+            ESP_LOGI("UART TEST", "Flag: %d", flag);
+            if(flag == false){
+                setServoAngle(converted & 0xff);
+                setHBridgePWM(converted >> 8, converted & 0xff);
+                ESP_LOGI("UART TEST", "                         Servo data: %ld", converted & 0xff);
+                ESP_LOGI("UART TEST", "                         H-bridge data: %ld", converted >> 8);
             }
         }
-        
-
     }
 }
 
 void app_main(void)
 {
     initPWM1();
-    initPWM2();
-    initPWM2();
+    initPWM2and3();
+    // initGPIO();
     bt_init();
     read_byte(NULL);
 }
