@@ -10,6 +10,7 @@
 #include "sdkconfig.h"
 #include "esp_log.h"
 #include "string.h"
+#include "esp_task_wdt.h"
 
 #define TXD_PIN 35
 #define RXD_PIN 36
@@ -41,6 +42,7 @@ static void read_byte(void *arg)
     char data[7];
     long converted = 80;
     while (1) {
+        esp_task_wdt_reset();
         int len = uart_read_bytes(uart_num, data, 6, 10);
         // ESP_LOGI("UART TEST", "Recv str: %s | %d", (char *) data, len);
         if (len == 6) {

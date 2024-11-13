@@ -10,42 +10,41 @@
 void setServoAngle(long angle)
 {
 	if (angle >= 40 && angle <= 120) {
-		ESP_LOGI("UART TEST", "Angle: %ld", angle);
+		// ESP_LOGI("UART TEST", "Angle: %ld", angle);
 		
 		int pulseWidth = MIN_PULSE_WIDTH + ((MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) * angle) / 180;
 
 		uint32_t duty_max = (1 << PWM_RESOLUTION) - 1;
 		uint32_t period_us = 1000000 / PWM_FREQUENCY;
 		uint32_t duty = (pulseWidth * duty_max) / period_us;
-		ESP_LOGI("UART TEST", "Duty: %d", duty);
+		// ESP_LOGI("UART TEST", "Duty: %d", duty);
 
 		ledc_set_duty(LEDC_MODE, PWM_CHANNEL1, duty);
 		ledc_update_duty(LEDC_MODE, PWM_CHANNEL1);
 	}
 }
+
 void setHBridgePWM(long dutyCycle, long angle) {
-	//  gpio_set_level(GPIO_NUM_20, 1);
 	if(angle >= 40 && angle <= 120) {
-		bool neg = false;
-		if(dutyCycle > 100) {
-			neg = true;
-			dutyCycle -= 100;
-		}
-		int cycle = 8191 * dutyCycle / 100;
-		ESP_LOGI("Motor", "cycle: %d", cycle);
-		if(neg) {
-			ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, 0);
-			ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, cycle);
-		}
-		else {
-			if(cycle < 60){
-				cycle += 60;
+		if(dutyCycle <= 100 || angle == 80) {
+			bool neg = false;
+			if(dutyCycle > 100) {
+				neg = true;
+				dutyCycle -= 100;
 			}
-			ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, cycle - 60);
-			ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, 0);
+			int cycle = 8191 * dutyCycle / 100;
+			// ESP_LOGI("Motor", "cycle: %d", cycle);
+			if(neg) {
+				ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, 0);
+				ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, cycle);
+			}
+			else {
+				ledc_set_duty(LEDC_MODE, PWM_CHANNEL2, cycle);
+				ledc_set_duty(LEDC_MODE, PWM_CHANNEL3, 0);
+			}
+			ledc_update_duty(LEDC_MODE, PWM_CHANNEL2);
+			ledc_update_duty(LEDC_MODE, PWM_CHANNEL3);
 		}
-		ledc_update_duty(LEDC_MODE, PWM_CHANNEL2);
-		ledc_update_duty(LEDC_MODE, PWM_CHANNEL3);
 	}
 }
 
